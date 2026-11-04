@@ -72,6 +72,17 @@ def create_app() -> FastAPI:
     app.include_router(bookings.router)
     app.include_router(admin.router)
 
+    # Root Endpoint
+    @app.get("/", tags=["Root"], summary="API Root Health & Info")
+    async def root():
+        return {
+            "name": settings.APP_NAME,
+            "status": "online",
+            "docs": "/docs",
+            "events": "/events",
+            "health": "/health",
+        }
+
     # Health Check Endpoint
     @app.get("/health", tags=["Health"], summary="Service Health Check")
     async def health_check():

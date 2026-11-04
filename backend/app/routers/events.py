@@ -51,6 +51,11 @@ def _doc_to_response(doc: dict[str, Any]) -> EventResponse:
     response_model=EventListResponse,
     summary="List events with filtering, search, sorting, and pagination",
 )
+@router.get(
+    "/",
+    response_model=EventListResponse,
+    include_in_schema=False,
+)
 async def list_events(
     search: Optional[str] = Query(default=None, description="Text search on title and description"),
     category: Optional[str] = Query(default=None, description="Filter by event category"),
@@ -147,6 +152,12 @@ async def get_event(
     response_model=EventResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new event (Admin only)",
+)
+@router.post(
+    "/",
+    response_model=EventResponse,
+    status_code=status.HTTP_201_CREATED,
+    include_in_schema=False,
 )
 async def create_event(
     event_in: EventCreate,
