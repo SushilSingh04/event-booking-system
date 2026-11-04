@@ -1,8 +1,8 @@
-# EventHub — Event Booking & Seat Reservation System
+# EventFlow — Event Booking & Seat Reservation System
 
 An asynchronous, full-stack event booking platform designed from the ground up to solve one of web engineering's classic headaches: **race conditions during high-demand ticket sales**. 
 
-Built with **FastAPI**, **MongoDB (Motor)**, and **React 19**, EventHub guarantees zero overbooking even when dozens of users compete for the exact same remaining seats at the exact same millisecond.
+Built with **FastAPI**, **MongoDB (Motor)**, and **React 19**, EventFlow guarantees zero overbooking even when dozens of users compete for the exact same remaining seats at the exact same millisecond.
 
 ---
 
@@ -15,7 +15,7 @@ Most naive ticket booking apps follow a standard read-then-write pattern:
 
 Under flash-sale traffic (e.g. 50 users clicking "Book" simultaneously), multiple requests pass step 2 before any write commits. The result? Negative seat inventory, double-sold tickets, and frustrated users.
 
-EventHub avoids both slow distributed locking (Redis Redlock / pessimistic table locks) and naive read-then-write race conditions by relying on **database-level atomic Compare-and-Swap (CAS)** operators.
+EventFlow avoids both slow distributed locking (Redis Redlock / pessimistic table locks) and naive read-then-write race conditions by relying on **database-level atomic Compare-and-Swap (CAS)** operators.
 
 ### How Atomic CAS works here
 When a booking request arrives, we execute a single atomic `find_one_and_update` operation directly inside MongoDB:
