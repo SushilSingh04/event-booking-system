@@ -1,8 +1,11 @@
 import json
 from functools import lru_cache
-from typing import Union
+from typing import Any, Union
+from pathlib import Path
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
@@ -15,8 +18,8 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
-    # CORS
-    CORS_ORIGINS: list[str] = [
+    # CORS (Typed as Any to prevent pydantic-settings from forcing json.loads on plain strings)
+    CORS_ORIGINS: Any = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
@@ -36,22 +39,27 @@ class Settings(BaseSettings):
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
-    def assemble_cors_origins(cls, v: Union[str, list[str]]) -> list[str]:
+    def assemble_cors_origins(cls, v: Any) -> list[str]:
         if isinstance(v, str):
-            if v.strip().startswith("[") and v.strip().endswith("]"):
+            clean_v = v.strip()
+            # If formatted as a JSON array like ["https://app.vercel.app"]
+            if clean_v.startswith("[") and clean_v.endswith("]"):
                 try:
-                    return json.loads(v)
+                    parsed = json.loads(clean_v)
+                    if isinstance(parsed, list):
+                        return [str(o).strip().rstrip("/") for o in parsed if o]
                 except Exception:
                     pass
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
-        elif isinstance(v, list):
-            return v
+            # If formatted as comma-separated or single string like https://app.vercel.app
+            return [o.strip().rstrip("/") for o in clean_v.split(",") if o.strip()]
+        elif isinstance(v, (list, tuple, set)):
+            return [str(o).strip().rstrip("/") for o in v if o]
         raise ValueError("Invalid format for CORS_ORIGINS")
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(str(BACKEND_DIR / ".env"), ".env"),
         env_file_encoding="utf-8",
-        case_sensitive=True,
+        case_sensitive=False,
         extra="ignore",
     )
 

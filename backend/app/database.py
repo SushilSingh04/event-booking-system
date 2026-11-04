@@ -14,14 +14,14 @@ class DatabaseManager:
 db_manager = DatabaseManager()
 
 
-async def init_db(mongodb_uri: str, db_name: str) -> None:
+async def init_db(mongodb_uri: str, db_name: str, server_selection_timeout_ms: int = 5000) -> None:
     """Initialize the shared Motor client and configure database indexes."""
     logger.info("Initializing MongoDB client...")
-    db_manager.client = AsyncIOMotorClient(mongodb_uri)
+    db_manager.client = AsyncIOMotorClient(mongodb_uri, serverSelectionTimeoutMS=server_selection_timeout_ms)
     db_manager.db = db_manager.client[db_name]
 
     # Verify connectivity
-    await db_manager.client.admin.command("ping")
+    await db_manager.db.command("ping")
     logger.info("MongoDB connection successfully established to database '%s'.", db_name)
 
     # Create indexes on startup

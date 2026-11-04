@@ -13,8 +13,35 @@ from app.database import close_db, get_database, init_db
 
 async def seed():
     settings = get_settings()
-    print(f"Connecting to MongoDB at {settings.MONGODB_URI} (DB: {settings.MONGODB_DB_NAME})...")
-    await init_db(settings.MONGODB_URI, settings.MONGODB_DB_NAME)
+    uri = settings.MONGODB_URI
+    db_name = settings.MONGODB_DB_NAME
+
+    # Mask password for safe logging
+    import re
+    masked_uri = re.sub(r":([^@]+)@", r":***@", uri) if "@" in uri else uri
+    print(f"Connecting to MongoDB at {masked_uri} (DB: {db_name})...")
+
+    try:
+        await init_db(uri, db_name)
+    except (Exception, asyncio.CancelledError) as exc:
+        print("\n[ERROR] Could not connect to MongoDB.")
+        if "localhost" in uri or "127.0.0.1" in uri:
+            print("\nTroubleshooting Local MongoDB:")
+            print("  * The MongoDB service is currently stopped or not installed on your laptop.")
+            print("  * To start MongoDB on Windows, open an Administrator PowerShell and run:")
+            print("      net start MongoDB")
+            print("  * Or if you are using Docker, run:")
+            print("      docker compose up -d mongo")
+            print("  * If you meant to seed MongoDB Atlas (cloud), set your connection string first:")
+            print("      $env:MONGODB_URI=\"mongodb+srv://<user>:<password>@cluster0...mongodb.net/?retryWrites=true&w=majority\"")
+        else:
+            print("\nTroubleshooting MongoDB Atlas (Cloud):")
+            print("  * Ensure your IP address is whitelisted in MongoDB Atlas:")
+            print("      Atlas Dashboard > Security > Network Access > Add IP > Allow Access from Anywhere (0.0.0.0/0)")
+            print("  * Double-check your database username & password in the connection string.")
+            print("  * Some corporate or university Wi-Fi networks block MongoDB ports (27017). Try a mobile hotspot.")
+        sys.exit(1)
+
     db = get_database()
     users_collection = db["users"]
     events_collection = db["events"]
@@ -188,4 +215,8 @@ async def seed():
 
 
 if __name__ == "__main__":
-    asyncio.run(seed())
+    try:
+        asyncio.run(seed())
+    except KeyboardInterrupt:
+        print("\n[ABORTED] Seeding cancelled by user.")
+        sys.exit(130)
