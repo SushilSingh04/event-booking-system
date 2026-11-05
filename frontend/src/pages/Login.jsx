@@ -69,18 +69,11 @@ const Login = () => {
   };
 
   // Helper function to fill demo credentials
-  const fillCredentials = (role) => {
-    if (role === 'admin') {
-      setFormData({
-        email: 'admin@example.com',
-        password: 'Admin@Password123',
-      });
-    } else {
-      setFormData({
-        email: 'user@example.com',
-        password: 'User@Password123',
-      });
-    }
+  const fillCredentials = () => {
+    setFormData({
+      email: 'user@example.com',
+      password: 'User@Password123',
+    });
     setErrors({});
     setServerError('');
   };
@@ -212,22 +205,13 @@ const Login = () => {
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider text-center mb-2">
               Quick Demo Fill
             </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => fillCredentials('admin')}
-                className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
-              >
-                Fill Admin Demo
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials('user')}
-                className="px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
-              >
-                Fill User Demo
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={fillCredentials}
+              className="w-full px-3 py-2 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-center"
+            >
+              Fill User Demo
+            </button>
           </div>
         </div>
 
